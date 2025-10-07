@@ -1,5 +1,6 @@
 package br.allevi.quest4sale.entities;
 
+import br.allevi.quest4sale.entities.Enums.CompetitionStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -30,7 +31,7 @@ public class Competition {
     private LocalDate endDate;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private StatusCompetition status = StatusCompetition.PLANEJADA;
+    private CompetitionStatus status = CompetitionStatus.PLANEJADA;
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -38,7 +39,4 @@ public class Competition {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    public enum StatusCompetition {
-        PLANEJADA, ATIVA, FINALIZADA
-    }
 }

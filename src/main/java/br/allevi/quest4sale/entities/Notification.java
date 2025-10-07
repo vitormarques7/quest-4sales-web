@@ -1,5 +1,6 @@
 package br.allevi.quest4sale.entities;
 
+import br.allevi.quest4sale.entities.Enums.NotificationType;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -27,7 +28,7 @@ public class Notification {
     private Competition competition;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private notificationType type;
+    private NotificationType type;
     @Column(nullable = false, length = 100)
     private String title;
     @Column(nullable = false, columnDefinition = "TEXT")
@@ -40,8 +41,5 @@ public class Notification {
 
     public void markAsRead() {
         isRead = true;
-    }
-    public enum notificationType {
-        INFO, AVISO, PREMIO, SISTEMA
     }
 }
