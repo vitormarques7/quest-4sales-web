@@ -26,7 +26,7 @@ public class Role {
     @Column(nullable = false, length = 255)
     private String description;
     @CreationTimestamp
-    @Column(name = "crated_at", updatable = false)
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
     @UpdateTimestamp
     @Column(name = "updated_at")
@@ -46,7 +46,7 @@ public class Role {
         }
         public void removeUser(User user) {
         this.users.remove(user);
-        user.getRoles().remove(this);
+        users.getRoles().remove(this);
     }
     public boolean hasRole(String role) {
         return this.name.equals(normalizeRoleName(role));
