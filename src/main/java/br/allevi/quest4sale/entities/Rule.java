@@ -33,7 +33,7 @@ public class Rule {
     @Column(name = "trip_weight", nullable = false, precision = 10, scale = 2)
     private BigDecimal tripWeight;
     @CreationTimestamp
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
     @UpdateTimestamp
     @Column(name = "updated_at")

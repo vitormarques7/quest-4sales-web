@@ -33,7 +33,7 @@ public class Competition {
     @Column(nullable = false, length = 20)
     private StatusCompetition status = StatusCompetition.PLANEJADA;
     @CreationTimestamp
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
     @UpdateTimestamp
     @Column(name = "updated_at")

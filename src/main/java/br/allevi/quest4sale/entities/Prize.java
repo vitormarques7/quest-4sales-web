@@ -32,7 +32,7 @@ public class Prize {
     @Column(nullable = false)
     private Integer placement;
     @CreationTimestamp
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
     @UpdateTimestamp
     @Column(name = "updated_at")
