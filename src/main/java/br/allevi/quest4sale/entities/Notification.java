@@ -32,14 +32,14 @@ public class Notification {
     private String title;
     @Column(nullable = false, columnDefinition = "TEXT")
     private String message;
-    @Column(name = "read", nullable = false)
-    private Boolean read = false;
+    @Column(name = "is_read", nullable = false)
+    private Boolean isRead = false;
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
-    public void wasRead() {
-        read = true;
+    public void markAsRead() {
+        isRead = true;
     }
     public enum notificationType {
         INFO, AVISO, PREMIO, SISTEMA
