@@ -7,8 +7,6 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -40,22 +38,6 @@ public class Competition {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-
-    @OneToMany(mappedBy = "competition", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
-    @Builder.Default
-    private Set<Rule> rules = new HashSet<>();
-
-    @OneToMany(mappedBy = "competition", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
-    @Builder.Default
-    private Set<Prize> prizes = new HashSet<>();
-
-    @OneToMany(mappedBy = "competition", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
-    @Builder.Default
-    private Set<Score> Scores = new HashSet<>();
-
-    @OneToMany(mappedBy = "competition", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
-    @Builder.Default
-    private Set<Ranking> rankings = new HashSet<>();
 
     public enum StatusCompetition {
         PLANEJADA, ATIVA, FINALIZADA

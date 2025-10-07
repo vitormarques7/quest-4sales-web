@@ -10,6 +10,7 @@ import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 @Entity
@@ -44,15 +45,6 @@ public class Sale {
 
     @OneToMany(mappedBy = "sale", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    private Set<Score> scores = new HashSet<>();
-
-    public void addScore(Score score) {
-        score.add(score);
-        score.setSale(this);
-    }
-    public void removeScore(Score score) {
-        score.remove(score);
-        score.setSale(null);
-    }
+    private Set<Score> score = new HashSet<>();
 
 }
