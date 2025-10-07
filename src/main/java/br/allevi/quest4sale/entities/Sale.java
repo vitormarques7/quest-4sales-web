@@ -6,9 +6,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.math.BigDecimal;
-import java.text.DecimalFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -35,7 +34,7 @@ public class Sale {
     @Column(name = "travel_quantity", nullable = false)
     private Integer travelQuantity;
     @Column(name = "sale_date", nullable = false)
-    private Date saleDate;
+    private LocalDate saleDate;
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime created_at;
@@ -45,6 +44,6 @@ public class Sale {
 
     @OneToMany(mappedBy = "sale", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    private Set<Score> score = new HashSet<>();
+    private Set<Score> scores = new HashSet<>();
 
 }

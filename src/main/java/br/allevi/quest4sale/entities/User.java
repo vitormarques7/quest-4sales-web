@@ -39,21 +39,26 @@ public class User {
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
-            name = "user_papel",
+            name = "user_role",
             joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "papel_id")
+            inverseJoinColumns = @JoinColumn(name = "role_id")
     )
-    private Set<Role> roles = new Set<Role>();
+    @Builder.Default
+    private Set<Role> roles = new HashSet<>();
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    private Set<Sale> sales = new Set<Sale>();
+    @Builder.Default
+    private Set<Sale> sales = new HashSet<>();
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    private Set<Score> Scores = new Set<Score>();
+    @Builder.Default
+    private Set<Score> scores = new HashSet<>();
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    private Set<Ranking> rankings = new Set<Ranking>();
+    @Builder.Default
+    private Set<Ranking> rankings = new HashSet<>();
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
-    private Set<Notification> notifications = new Set<Notification>();
+    @Builder.Default
+    private Set<Notification> notifications = new HashSet<>();
 }

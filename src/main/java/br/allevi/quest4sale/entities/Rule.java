@@ -26,8 +26,8 @@ public class Rule {
     private Competition competition;
     @Column(name = "value_weight", nullable = false, precision = 10, scale = 2)
     private BigDecimal valueWeight;
-    @Column(name = "itens_weight", nullable = false, precision = 10, scale = 2)
-    private BigDecimal itensWeight;
+    @Column(name = "items_weight", nullable = false, precision = 10, scale = 2)
+    private BigDecimal itemsWeight;
     @Column(name = "positivation_weight", nullable = false, precision = 10, scale = 2)
     private BigDecimal positivationWeight;
     @Column(name = "trip_weight", nullable = false, precision = 10, scale = 2)
