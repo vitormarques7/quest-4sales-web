@@ -1,6 +1,7 @@
 package br.allevi.quest4sale.services;
 
 import br.allevi.quest4sale.entities.User;
+import br.allevi.quest4sale.entities.dtos.CreateUserDTO;
 import br.allevi.quest4sale.repositories.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,23 @@ import java.util.UUID;
 @Slf4j
 public class UserService {
     private final UserRepository userRepository;
+
+    public User create(CreateUserDTO createUserDTO) {
+        log.info("Criando usuário: {}", createUserDTO.getEmail());
+
+        if (userRepository.existsByEmail(createUserDTO.getEmail())) {
+            throw new RuntimeException("Email já cadastrado");
+        }
+
+        User user = User.builder()
+                .username(createUserDTO.getUsername())
+                .email(createUserDTO.getEmail())
+                .password(createUserDTO.getPassword()) // Note: should be hashed in real implementation
+                .avatarUrl(createUserDTO.getAvatarUrl())
+                .build();
+
+        return userRepository.save(user);
+    }
 
     public User create(User user) {
         log.info("Criando usuário: {}", user.getEmail());

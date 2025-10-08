@@ -1,6 +1,8 @@
 package br.allevi.quest4sale.entities;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -26,8 +28,13 @@ public class Sale {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
     @Column(nullable = false, precision = 15, scale = 2)
-    private BigDecimal price;
+    @NotNull
+    @Positive
+    private BigDecimal amount;
+    
     @Column(nullable = false)
+    @NotNull
+    @Positive
     private Integer quantity;
     @Column(name = "positive_sale", nullable = false)
     private Boolean positiveSale;

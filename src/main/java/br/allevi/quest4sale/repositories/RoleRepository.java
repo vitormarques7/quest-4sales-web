@@ -12,3 +12,4 @@ public interface RoleRepository extends JpaRepository<Role, UUID> {
 }
 
 
+

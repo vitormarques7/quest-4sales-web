@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -34,6 +35,48 @@ public class SaleService {
         User user = userRepository.findById(userId).orElseThrow();
         return saleRepository.findByUserAndSaleDateBetween(user, start, end);
     }
+
+    @Transactional(readOnly = true)
+    public List<Sale> findAll() {
+        return saleRepository.findAll();
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<Sale> findById(UUID id) {
+        return saleRepository.findById(id);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Sale> findByUser(UUID userId) {
+        User user = userRepository.findById(userId).orElseThrow();
+        return saleRepository.findByUser(user);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Sale> findByPeriod(LocalDate start, LocalDate end) {
+        return saleRepository.findBySaleDateBetween(start, end);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Sale> findByPeriod(UUID userId, LocalDate start, LocalDate end) {
+        User user = userRepository.findById(userId).orElseThrow();
+        return saleRepository.findByUserAndSaleDateBetween(user, start, end);
+    }
+
+    @Transactional
+    public Sale create(Sale sale) {
+        return saleRepository.save(sale);
+    }
+
+    @Transactional(readOnly = true)
+    public Double getTotalSalesByUser(UUID userId, LocalDate start, LocalDate end) {
+        User user = userRepository.findById(userId).orElseThrow();
+        return saleRepository.findByUserAndSaleDateBetween(user, start, end)
+                .stream()
+                .mapToDouble(Sale::getAmount)
+                .sum();
+    }
 }
+
 
 

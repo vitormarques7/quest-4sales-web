@@ -11,6 +11,8 @@ import java.util.UUID;
 public interface SaleRepository extends JpaRepository<Sale, UUID> {
     List<Sale> findByUser(User user);
     List<Sale> findByUserAndSaleDateBetween(User user, LocalDate start, LocalDate end);
+    List<Sale> findBySaleDateBetween(LocalDate start, LocalDate end);
 }
+
 
 
