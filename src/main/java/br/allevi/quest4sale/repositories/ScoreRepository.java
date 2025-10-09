@@ -10,6 +10,8 @@ import java.util.UUID;
 
 public interface ScoreRepository extends JpaRepository<Score, UUID> {
     List<Score> findByUserAndCompetition(User user, Competition competition);
+    List<Score> findByCompetition(Competition competition);
+
 }
 
 
