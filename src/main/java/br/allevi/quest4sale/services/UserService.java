@@ -4,9 +4,9 @@ import br.allevi.quest4sale.entities.User;
 import br.allevi.quest4sale.entities.dtos.CreateUserDTO;
 import br.allevi.quest4sale.repositories.UserRepository;
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.List;
 import java.util.Optional;
@@ -14,10 +14,15 @@ import java.util.UUID;
 
 @Service
 @Transactional
-@RequiredArgsConstructor
 @Slf4j
 public class UserService {
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     public User create(CreateUserDTO createUserDTO) {
         log.info("Criando usuário: {}", createUserDTO.getEmail());
@@ -29,7 +34,7 @@ public class UserService {
         User user = User.builder()
                 .username(createUserDTO.getUsername())
                 .email(createUserDTO.getEmail())
-                .password(createUserDTO.getPassword()) // Note: should be hashed in real implementation
+                .password(passwordEncoder.encode(createUserDTO.getPassword()))
                 .avatarUrl(createUserDTO.getAvatarUrl())
                 .build();
 
