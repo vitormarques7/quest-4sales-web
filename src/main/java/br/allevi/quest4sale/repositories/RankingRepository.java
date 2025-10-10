@@ -15,3 +15,4 @@ public interface RankingRepository extends JpaRepository<Ranking, UUID> {
     
     List<Ranking> findByCompetitionIdAndRankBetween(UUID competitionId, Integer startRank, Integer endRank);
 }
+

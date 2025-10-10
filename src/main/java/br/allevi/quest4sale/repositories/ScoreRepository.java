@@ -14,3 +14,4 @@ public interface ScoreRepository extends JpaRepository<Score, UUID> {
 
 
 
+

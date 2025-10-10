@@ -41,3 +41,4 @@ public class RankingService {
         return ranking.map(Ranking::getRank).orElse(-1);
     }
 }
+
