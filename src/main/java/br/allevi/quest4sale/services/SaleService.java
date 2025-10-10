@@ -7,6 +7,7 @@ import br.allevi.quest4sale.repositories.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -73,7 +74,8 @@ public class SaleService {
         User user = userRepository.findById(userId).orElseThrow();
         return saleRepository.findByUserAndSaleDateBetween(user, start, end)
                 .stream()
-                .mapToDouble(Sale::getAmount)
+                .map(Sale::getAmount)
+                .mapToDouble(BigDecimal::doubleValue)
                 .sum();
     }
 }
