@@ -25,6 +25,7 @@ public class SecurityConfig {
                         // Endpoints públicos
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/users").permitAll() // Permitir cadastro de usuários
+                        .requestMatchers(HttpMethod.POST, "/api/competitions").permitAll() // Permitir criação de competição
                         .requestMatchers("/h2-console/**").permitAll() // Permitir acesso ao console H2
 
                         // Endpoints de teste
