@@ -23,7 +23,7 @@ public class NotificationService {
 
     @Transactional(readOnly = true)
     public List<Notification> getUnreadNotifications(UUID userId) {
-        return notificationRepository.findByUserIdAndReadFalseOrderByCreatedAtDesc(userId);
+        return notificationRepository.findByUserIdAndIsReadFalseOrderByCreatedAtDesc(userId);
     }
 
     @Transactional(readOnly = true)
@@ -41,7 +41,7 @@ public class NotificationService {
 
     @Transactional
     public void markAllAsRead(UUID userId) {
-        List<Notification> notifications = notificationRepository.findByUserIdAndReadFalse(userId);
+        List<Notification> notifications = notificationRepository.findByUserIdAndIsReadFalse(userId);
         notifications.forEach(notification -> notification.setIsRead(true));
         notificationRepository.saveAll(notifications);
     }
