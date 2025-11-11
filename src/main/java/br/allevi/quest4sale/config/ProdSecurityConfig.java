@@ -2,6 +2,7 @@ package br.allevi.quest4sale.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -14,27 +15,26 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
-public class SecurityConfig {
-
+@Profile("prod")
+public class ProdSecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-                        // Endpoints públicos
+
                         .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/users").permitAll() // Permitir cadastro de usuários
-                        .requestMatchers(HttpMethod.POST, "/api/competitions").permitAll() // Permitir criação de competição
-                        .requestMatchers("/h2-console/**").permitAll() // Permitir acesso ao console H2
+                        .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/competitions").permitAll()
+                        .requestMatchers("/h2-console/**").permitAll()
 
-                        // Endpoints de teste
-                        .requestMatchers("/api/erp/vendas").permitAll() // Mock do ERP aberto para testes
+                        .requestMatchers("/api/erp/vendas").permitAll()
 
-                        // Demais endpoints exigem autenticação
+
                         .anyRequest().authenticated()
                 )
-                // Headers para o H2 Console funcionar
+
                 .headers(headers -> headers.frameOptions(frame -> frame.disable()));
 
         return http.build();

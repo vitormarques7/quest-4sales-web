@@ -78,7 +78,6 @@ public class User implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // Em uma implementação futura, você pode mapear as Roles para Authorities
         return null;
     }
 
