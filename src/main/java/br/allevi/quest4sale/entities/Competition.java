@@ -14,6 +14,10 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
+@Table(name = "competition", indexes = {
+    @Index(name = "idx_competition_status", columnList = "status"),
+    @Index(name = "idx_competition_dates", columnList = "start_date, end_date")
+})
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor

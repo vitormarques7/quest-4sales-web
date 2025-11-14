@@ -9,6 +9,11 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
+@Table(name = "notification", indexes = {
+    @Index(name = "idx_notification_user", columnList = "user_id"),
+    @Index(name = "idx_notification_user_read", columnList = "user_id, is_read"),
+    @Index(name = "idx_notification_created", columnList = "created_at")
+})
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor

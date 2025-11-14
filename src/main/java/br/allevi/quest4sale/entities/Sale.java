@@ -15,6 +15,10 @@ import java.util.Set;
 import java.util.UUID;
 
 @Entity
+@Table(name = "sales", indexes = {
+    @Index(name = "idx_sale_user_date", columnList = "user_id, sale_date"),
+    @Index(name = "idx_sale_date", columnList = "sale_date")
+})
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor

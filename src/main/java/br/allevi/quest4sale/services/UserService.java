@@ -8,10 +8,11 @@ import br.allevi.quest4sale.repositories.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -56,8 +57,8 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public List<User> findAll() {
-        return userRepository.findAll();
+    public Page<User> findAll(Pageable pageable) {
+        return userRepository.findAll(pageable);
     }
 
     public Optional<User> findById(UUID id) {
@@ -104,7 +105,7 @@ public class UserService {
         userRepository.deleteById(id);
     }
 
-    public List<User> findSellers() {
-        return userRepository.findAll();
+    public Page<User> findSellers(Pageable pageable) {
+        return userRepository.findAll(pageable);
     }
 }

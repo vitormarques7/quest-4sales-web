@@ -18,7 +18,11 @@ import java.util.UUID;
 @Setter
 @ToString(exclude = {"user", "competition", "sale"})
 @EqualsAndHashCode(of = "id")
-@Table(name = "scores")
+@Table(name = "scores", indexes = {
+    @Index(name = "idx_score_user", columnList = "user_id"),
+    @Index(name = "idx_score_competition", columnList = "competition_id"),
+    @Index(name = "idx_score_user_competition", columnList = "user_id, competition_id")
+})
 public class Score {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

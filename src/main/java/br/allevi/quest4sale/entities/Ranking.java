@@ -10,6 +10,11 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
+@Table(name = "ranking", indexes = {
+    @Index(name = "idx_ranking_competition", columnList = "competition_id"),
+    @Index(name = "idx_ranking_competition_rank", columnList = "competition_id, rank"),
+    @Index(name = "idx_ranking_user", columnList = "user_id")
+})
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor

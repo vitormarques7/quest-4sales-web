@@ -5,11 +5,13 @@ import br.allevi.quest4sale.entities.User;
 import br.allevi.quest4sale.exceptions.ResourceNotFoundException;
 import br.allevi.quest4sale.repositories.SaleRepository;
 import br.allevi.quest4sale.repositories.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -40,8 +42,8 @@ public class SaleService {
     }
 
     @Transactional(readOnly = true)
-    public List<Sale> findAll() {
-        return saleRepository.findAll();
+    public Page<Sale> findAll(Pageable pageable) {
+        return saleRepository.findAll(pageable);
     }
 
     @Transactional(readOnly = true)
@@ -50,22 +52,20 @@ public class SaleService {
     }
 
     @Transactional(readOnly = true)
-    public List<Sale> findByUser(UUID userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com ID: " + userId));
-        return saleRepository.findByUser(user);
+    public Page<Sale> findByUser(UUID userId, Pageable pageable) {
+        User user = getUserOrThrow(userId);
+        return saleRepository.findByUser(user, pageable);
     }
 
     @Transactional(readOnly = true)
-    public List<Sale> findByPeriod(LocalDate start, LocalDate end) {
-        return saleRepository.findBySaleDateBetween(start, end);
+    public Page<Sale> findByPeriod(LocalDate start, LocalDate end, Pageable pageable) {
+        return saleRepository.findBySaleDateBetween(start, end, pageable);
     }
 
     @Transactional(readOnly = true)
-    public List<Sale> findByPeriod(UUID userId, LocalDate start, LocalDate end) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com ID: " + userId));
-        return saleRepository.findByUserAndSaleDateBetween(user, start, end);
+    public Page<Sale> findByPeriod(UUID userId, LocalDate start, LocalDate end, Pageable pageable) {
+        User user = getUserOrThrow(userId);
+        return saleRepository.findByUserAndSaleDateBetween(user, start, end, pageable);
     }
 
     @Transactional
@@ -74,13 +74,14 @@ public class SaleService {
     }
 
     @Transactional(readOnly = true)
-    public Double getTotalSalesByUser(UUID userId, LocalDate start, LocalDate end) {
-        User user = userRepository.findById(userId)
+    public BigDecimal getTotalSalesByUser(UUID userId, LocalDate start, LocalDate end) {
+        User user = getUserOrThrow(userId);
+        return saleRepository.sumAmountByUserAndPeriod(user, start, end);
+    }
+
+    private User getUserOrThrow(UUID userId) {
+        return userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com ID: " + userId));
-        return saleRepository.findByUserAndSaleDateBetween(user, start, end)
-                .stream()
-                .mapToDouble(Sale::getAmount)
-                .sum();
     }
 }
 
