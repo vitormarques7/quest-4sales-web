@@ -2,6 +2,7 @@ package br.allevi.quest4sale.services;
 
 import br.allevi.quest4sale.entities.Sale;
 import br.allevi.quest4sale.entities.User;
+import br.allevi.quest4sale.exceptions.ResourceNotFoundException;
 import br.allevi.quest4sale.repositories.SaleRepository;
 import br.allevi.quest4sale.repositories.UserRepository;
 import org.springframework.stereotype.Service;
@@ -25,14 +26,16 @@ public class SaleService {
 
     @Transactional
     public Sale createSale(UUID userId, Sale sale) {
-        User user = userRepository.findById(userId).orElseThrow();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com ID: " + userId));
         sale.setUser(user);
         return saleRepository.save(sale);
     }
 
     @Transactional(readOnly = true)
     public List<Sale> getUserSales(UUID userId, LocalDate start, LocalDate end) {
-        User user = userRepository.findById(userId).orElseThrow();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com ID: " + userId));
         return saleRepository.findByUserAndSaleDateBetween(user, start, end);
     }
 
@@ -48,7 +51,8 @@ public class SaleService {
 
     @Transactional(readOnly = true)
     public List<Sale> findByUser(UUID userId) {
-        User user = userRepository.findById(userId).orElseThrow();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com ID: " + userId));
         return saleRepository.findByUser(user);
     }
 
@@ -59,7 +63,8 @@ public class SaleService {
 
     @Transactional(readOnly = true)
     public List<Sale> findByPeriod(UUID userId, LocalDate start, LocalDate end) {
-        User user = userRepository.findById(userId).orElseThrow();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com ID: " + userId));
         return saleRepository.findByUserAndSaleDateBetween(user, start, end);
     }
 
@@ -70,7 +75,8 @@ public class SaleService {
 
     @Transactional(readOnly = true)
     public Double getTotalSalesByUser(UUID userId, LocalDate start, LocalDate end) {
-        User user = userRepository.findById(userId).orElseThrow();
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com ID: " + userId));
         return saleRepository.findByUserAndSaleDateBetween(user, start, end)
                 .stream()
                 .mapToDouble(Sale::getAmount)

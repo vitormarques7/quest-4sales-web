@@ -2,6 +2,8 @@ package br.allevi.quest4sale.services;
 
 import br.allevi.quest4sale.entities.Competition;
 import br.allevi.quest4sale.entities.Enums.CompetitionStatus;
+import br.allevi.quest4sale.exceptions.InvalidStateException;
+import br.allevi.quest4sale.exceptions.ResourceNotFoundException;
 import br.allevi.quest4sale.repositories.CompetitionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,7 +24,8 @@ public class CompetitionService {
 
     @Transactional(readOnly = true)
     public Competition getById(UUID id) {
-        return competitionRepository.findById(id).orElseThrow();
+        return competitionRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Competition não encontrada com ID: " + id));
     }
 
     @Transactional(readOnly = true)
@@ -63,12 +66,12 @@ public class CompetitionService {
     @Transactional
     public void startCompetition(UUID id) {
         Competition competition = competitionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Competition not found"));
-        
+                .orElseThrow(() -> new ResourceNotFoundException("Competition não encontrada com ID: " + id));
+
         if (competition.getStatus() != CompetitionStatus.PLANEJADA) {
-            throw new RuntimeException("Competition must be in PLANNED status to start");
+            throw new InvalidStateException("Competition deve estar no status PLANEJADA para ser iniciada. Status atual: " + competition.getStatus());
         }
-        
+
         competition.setStatus(CompetitionStatus.ATIVA);
         competitionRepository.save(competition);
     }
@@ -76,8 +79,8 @@ public class CompetitionService {
     @Transactional
     public void finishCompetition(UUID id) {
         Competition competition = competitionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Competition not found"));
-        
+                .orElseThrow(() -> new ResourceNotFoundException("Competition não encontrada com ID: " + id));
+
         competition.setStatus(CompetitionStatus.FINALIZADA);
         competitionRepository.save(competition);
     }
@@ -85,8 +88,8 @@ public class CompetitionService {
     @Transactional
     public Competition updateStatus(UUID id, CompetitionStatus status) {
         Competition competition = competitionRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Competition not found"));
-        
+                .orElseThrow(() -> new ResourceNotFoundException("Competition não encontrada com ID: " + id));
+
         competition.setStatus(status);
         return competitionRepository.save(competition);
     }

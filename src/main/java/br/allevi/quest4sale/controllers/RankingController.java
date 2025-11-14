@@ -50,23 +50,19 @@ public class RankingController {
             @PathVariable UUID competitionId,
             @PathVariable UUID userId,
             @RequestParam(defaultValue = "2") int range) {
-        try {
-            Integer userPosition = rankingService.getUserPosition(competitionId, userId);
-            if (userPosition == -1) {
-                return ResponseEntity.notFound().build();
-            }
-
-            int start = Math.max(1, userPosition - range);
-            int end = userPosition + range;
-
-            List<Ranking> rankings = rankingService.getCompetitionRanking(competitionId);
-            List<Ranking> aroundUser = rankings.stream()
-                    .filter(r -> r.getRank() >= start && r.getRank() <= end)
-                    .toList();
-
-            return ResponseEntity.ok(aroundUser);
-        } catch (Exception e) {
+        Integer userPosition = rankingService.getUserPosition(competitionId, userId);
+        if (userPosition == -1) {
             return ResponseEntity.notFound().build();
         }
+
+        int start = Math.max(1, userPosition - range);
+        int end = userPosition + range;
+
+        List<Ranking> rankings = rankingService.getCompetitionRanking(competitionId);
+        List<Ranking> aroundUser = rankings.stream()
+                .filter(r -> r.getRank() >= start && r.getRank() <= end)
+                .toList();
+
+        return ResponseEntity.ok(aroundUser);
     }
 }

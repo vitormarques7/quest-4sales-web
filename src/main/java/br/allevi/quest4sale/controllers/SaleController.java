@@ -47,12 +47,8 @@ public class SaleController {
     }
     @PostMapping
     public ResponseEntity<Sale> createSale(@Valid @RequestBody Sale sale) {
-        try {
-            Sale created = saleService.create(sale);
-            return ResponseEntity.ok(created);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
-        }
+        Sale created = saleService.create(sale);
+        return ResponseEntity.ok(created);
     }
     @GetMapping("/user/{userId}/total")
     public ResponseEntity<Double> getTotalSale(

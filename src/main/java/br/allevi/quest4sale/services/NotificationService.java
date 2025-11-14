@@ -1,6 +1,7 @@
 package br.allevi.quest4sale.services;
 
 import br.allevi.quest4sale.entities.Notification;
+import br.allevi.quest4sale.exceptions.ResourceNotFoundException;
 import br.allevi.quest4sale.repositories.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -34,7 +35,7 @@ public class NotificationService {
     @Transactional
     public void markAsRead(UUID id) {
         Notification notification = notificationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Notification not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Notification não encontrada com ID: " + id));
         notification.setIsRead(true);
         notificationRepository.save(notification);
     }

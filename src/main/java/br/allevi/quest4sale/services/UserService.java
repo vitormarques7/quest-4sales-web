@@ -2,6 +2,8 @@ package br.allevi.quest4sale.services;
 
 import br.allevi.quest4sale.entities.User;
 import br.allevi.quest4sale.entities.dtos.CreateUserDTO;
+import br.allevi.quest4sale.exceptions.ConflictException;
+import br.allevi.quest4sale.exceptions.ResourceNotFoundException;
 import br.allevi.quest4sale.repositories.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +25,7 @@ public class UserService {
         log.info("Criando usuário: {}", createUserDTO.getEmail());
 
         if (userRepository.existsByEmail(createUserDTO.getEmail())) {
-            throw new RuntimeException("Email já cadastrado");
+            throw new ConflictException("Email já cadastrado: " + createUserDTO.getEmail());
         }
 
         User user = User.builder()
@@ -40,7 +42,7 @@ public class UserService {
         log.info("Criando usuário: {}", user.getEmail());
 
         if (userRepository.existsByEmail(user.getEmail())) {
-            throw new RuntimeException("Email já cadastrado");
+            throw new ConflictException("Email já cadastrado: " + user.getEmail());
         }
 
         return userRepository.save(user);
@@ -59,11 +61,11 @@ public class UserService {
     }
     public User update(UUID id, User userDetails) {
         User existingUser = userRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com ID: " + id));
 
         if (!existingUser.getEmail().equals(userDetails.getEmail()) &&
                 userRepository.existsByEmail(userDetails.getEmail())) {
-            throw new RuntimeException("Email já em uso");
+            throw new ConflictException("Email já em uso: " + userDetails.getEmail());
         }
 
         existingUser.setUsername(userDetails.getUsername());
@@ -75,7 +77,7 @@ public class UserService {
 
     public void delete(UUID id) {
         if (!userRepository.existsById(id)) {
-            throw new RuntimeException("Usuário não encontrado");
+            throw new ResourceNotFoundException("Usuário não encontrado com ID: " + id);
         }
         userRepository.deleteById(id);
     }

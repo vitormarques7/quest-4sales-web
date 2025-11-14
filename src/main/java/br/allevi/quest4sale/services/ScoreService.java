@@ -3,6 +3,7 @@ package br.allevi.quest4sale.services;
 import br.allevi.quest4sale.entities.Competition;
 import br.allevi.quest4sale.entities.Score;
 import br.allevi.quest4sale.entities.User;
+import br.allevi.quest4sale.exceptions.ResourceNotFoundException;
 import br.allevi.quest4sale.repositories.ScoreRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,7 +27,8 @@ public class ScoreService {
 
     @Transactional(readOnly = true)
     public Score getById(UUID id) {
-        return scoreRepository.findById(id).orElseThrow();
+        return scoreRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Score não encontrado com ID: " + id));
     }
 
     @Transactional(readOnly = true)

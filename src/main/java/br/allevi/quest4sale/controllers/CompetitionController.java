@@ -36,47 +36,31 @@ public class CompetitionController {
 
     @PostMapping
     public ResponseEntity<Competition> createCompetition(@Valid @RequestBody Competition competition) {
-        try {
-            Competition created = competitionService.create(competition);
-            return ResponseEntity.ok(created);
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
-        }
+        Competition created = competitionService.create(competition);
+        return ResponseEntity.ok(created);
     }
 
     @PutMapping("/{id}/start")
     public ResponseEntity<Competition> startCompetition(@PathVariable UUID id) {
-        try {
-            competitionService.startCompetition(id);
-            return competitionService.findById(id)
-                    .map(ResponseEntity::ok)
-                    .orElse(ResponseEntity.notFound().build());
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
-        }
+        competitionService.startCompetition(id);
+        return competitionService.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @PutMapping("/{id}/finish")
     public ResponseEntity<Competition> finishCompetition(@PathVariable UUID id) {
-        try {
-            competitionService.finishCompetition(id);
-            return competitionService.findById(id)
-                    .map(ResponseEntity::ok)
-                    .orElse(ResponseEntity.notFound().build());
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
-        }
+        competitionService.finishCompetition(id);
+        return competitionService.findById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @PutMapping("/{id}/status")
     public ResponseEntity<Competition> updateCompetitionStatus(
             @PathVariable UUID id,
             @RequestParam CompetitionStatus status) {
-        try {
-            Competition updated = competitionService.updateStatus(id, status);
-            return ResponseEntity.ok(updated);
-        } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
-        }
+        Competition updated = competitionService.updateStatus(id, status);
+        return ResponseEntity.ok(updated);
     }
 }
