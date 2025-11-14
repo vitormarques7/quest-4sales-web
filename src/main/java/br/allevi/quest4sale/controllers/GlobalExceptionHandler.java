@@ -1,6 +1,6 @@
 package br.allevi.quest4sale.controllers;
 
-import br.allevi.quest4sale.dtos.ApiErrorResponse;
+import br.allevi.quest4sale.entities.dtos.ApiErrorResponse;
 import br.allevi.quest4sale.exceptions.BadRequestException;
 import br.allevi.quest4sale.exceptions.ConflictException;
 import br.allevi.quest4sale.exceptions.ForbiddenException;

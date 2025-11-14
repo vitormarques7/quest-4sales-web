@@ -8,6 +8,7 @@ import br.allevi.quest4sale.repositories.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,6 +21,7 @@ import java.util.UUID;
 @Slf4j
 public class UserService {
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public User create(CreateUserDTO createUserDTO) {
         log.info("Criando usuário: {}", createUserDTO.getEmail());
@@ -28,10 +30,12 @@ public class UserService {
             throw new ConflictException("Email já cadastrado: " + createUserDTO.getEmail());
         }
 
+        String hashedPassword = passwordEncoder.encode(createUserDTO.getPassword());
+
         User user = User.builder()
                 .username(createUserDTO.getUsername())
                 .email(createUserDTO.getEmail())
-                .password(createUserDTO.getPassword()) // Note: should be hashed in real implementation
+                .password(hashedPassword)
                 .avatarUrl(createUserDTO.getAvatarUrl())
                 .build();
 
@@ -43,6 +47,10 @@ public class UserService {
 
         if (userRepository.existsByEmail(user.getEmail())) {
             throw new ConflictException("Email já cadastrado: " + user.getEmail());
+        }
+
+        if (user.getPassword() != null && !user.getPassword().startsWith("$2a$")) {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
         }
 
         return userRepository.save(user);
@@ -73,6 +81,20 @@ public class UserService {
         existingUser.setAvatarUrl(userDetails.getAvatarUrl());
 
         return userRepository.save(existingUser);
+    }
+
+    public void updatePassword(UUID userId, String currentPassword, String newPassword) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado com ID: " + userId));
+
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            throw new ConflictException("Senha atual incorreta");
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
+
+        log.info("Senha atualizada para usuário: {}", user.getEmail());
     }
 
     public void delete(UUID id) {

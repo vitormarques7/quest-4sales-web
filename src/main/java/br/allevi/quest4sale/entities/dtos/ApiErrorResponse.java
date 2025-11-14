@@ -1,4 +1,4 @@
-package br.allevi.quest4sale.dtos;
+package br.allevi.quest4sale.entities.dtos;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import java.time.Instant;
