@@ -13,6 +13,7 @@ import java.util.UUID;
 @AllArgsConstructor
 public class LoginResponseDTO {
     private String token;
+    @Builder.Default
     private String type = "Bearer";
     private UUID userId;
     private String username;

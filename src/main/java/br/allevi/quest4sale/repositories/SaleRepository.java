@@ -10,11 +10,13 @@ import org.springframework.data.repository.query.Param;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 
 public interface SaleRepository extends JpaRepository<Sale, UUID> {
     Page<Sale> findByUser(User user, Pageable pageable);
     Page<Sale> findByUserAndSaleDateBetween(User user, LocalDate start, LocalDate end, Pageable pageable);
+    List<Sale> findByUserAndSaleDateBetween(User user, LocalDate start, LocalDate end);
     Page<Sale> findBySaleDateBetween(LocalDate start, LocalDate end, Pageable pageable);
 
     @Query("SELECT COALESCE(SUM(s.amount), 0) FROM Sale s WHERE s.user = :user AND s.saleDate BETWEEN :start AND :end")

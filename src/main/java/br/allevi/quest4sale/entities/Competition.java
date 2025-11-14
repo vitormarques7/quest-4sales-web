@@ -46,6 +46,7 @@ public class Competition {
     private LocalDate endDate;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
+    @Builder.Default
     private CompetitionStatus status = CompetitionStatus.PLANEJADA;
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

@@ -14,7 +14,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @Getter
 @Setter
-@ToString(exclude = "Competition")
+@ToString(exclude = "competition")
 @EqualsAndHashCode(of = "id")
 public class Prize {
     @Id

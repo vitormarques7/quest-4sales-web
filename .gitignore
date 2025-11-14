@@ -31,3 +31,26 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### SECURITY ###
+.env
+.env.local
+.env.*.local
+application-local.properties
+application-secret.properties
+
+### LOGS ###
+logs/
+*.log
+*.log.*
+
+### TEMPORARY FILES ###
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+### OS ###
+.DS_Store
+Thumbs.db
