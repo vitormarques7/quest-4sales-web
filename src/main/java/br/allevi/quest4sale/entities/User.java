@@ -15,8 +15,8 @@ import java.util.UUID;
 
 @Entity
 @Table(name="users", indexes = {
-    @Index(name = "idx_user_email", columnList = "email"),
-    @Index(name = "idx_user_username", columnList = "username")
+        @Index(name = "idx_user_email", columnList = "email"),
+        @Index(name = "idx_user_username", columnList = "username")
 })
 @Getter
 @Setter
@@ -27,25 +27,41 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
+
     @Column(nullable = false)
     @NotBlank
     @Size(min = 3, max = 50)
     private String username;
-    
+
     @Column(nullable = false, unique = true)
     @NotBlank
     @Email
     private String email;
-    
+
     @Column(nullable = false)
     @NotBlank
     @Size(min = 6)
     private String password;
+
+
+    @Column(name = "first_name", nullable = false)
+    @NotBlank
+    @Size(max = 50)
+    private String firstName;
+
+    @Column(name = "last_name", nullable = false)
+    @NotBlank
+    @Size(max = 50)
+    private String lastName;
+    // -------------------------------
+
     @Column(name = "avatar_url")
     private String avatarUrl;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
+
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;

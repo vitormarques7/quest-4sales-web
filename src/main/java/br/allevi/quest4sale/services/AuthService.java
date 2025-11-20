@@ -27,7 +27,7 @@ public class AuthService {
     private final JwtTokenProvider tokenProvider;
 
     public AuthService(UserRepository userRepository, RoleRepository roleRepository,
-                      PasswordEncoder passwordEncoder, JwtTokenProvider tokenProvider) {
+                       PasswordEncoder passwordEncoder, JwtTokenProvider tokenProvider) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
@@ -82,6 +82,8 @@ public class AuthService {
                 .username(registerRequest.getUsername())
                 .email(registerRequest.getEmail())
                 .password(passwordEncoder.encode(registerRequest.getPassword()))
+                .firstName(registerRequest.getFirstName())
+                .lastName(registerRequest.getLastName())
                 .roles(roles)
                 .build();
 
