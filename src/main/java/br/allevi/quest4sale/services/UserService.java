@@ -41,16 +41,6 @@ public class UserService {
         return userRepository.save(user);
     }
 
-    public User create(User user) {
-        log.info("Criando usuário: {}", user.getEmail());
-
-        if (userRepository.existsByEmail(user.getEmail())) {
-            throw new RuntimeException("Email já cadastrado");
-        }
-
-        return userRepository.save(user);
-    }
-
     public List<User> findAll() {
         return userRepository.findAll();
     }
