@@ -20,9 +20,11 @@ import java.util.UUID;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider tokenProvider;
+    private final TokenBlacklistService blacklistService;
 
-    public JwtAuthenticationFilter(JwtTokenProvider tokenProvider) {
+    public JwtAuthenticationFilter(JwtTokenProvider tokenProvider, TokenBlacklistService blacklistService) {
         this.tokenProvider = tokenProvider;
+        this.blacklistService = blacklistService;
     }
 
     @Override
@@ -31,7 +33,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String token = getJwtFromRequest(request);
 
-        if (StringUtils.hasText(token) && tokenProvider.validateToken(token)) {
+        if (StringUtils.hasText(token) && !blacklistService.isTokenBlacklisted(token) && tokenProvider.validateToken(token)) {
             UUID userId = tokenProvider.getUserIdFromToken(token);
             String role = tokenProvider.getRoleFromToken(token);
 
