@@ -1,23 +1,34 @@
 package br.allevi.quest4sale.services;
 
-import br.allevi.quest4sale.entities.Competition;
-import br.allevi.quest4sale.entities.Score;
-import br.allevi.quest4sale.entities.User;
+import br.allevi.quest4sale.entities.*;
 import br.allevi.quest4sale.exceptions.ResourceNotFoundException;
-import br.allevi.quest4sale.repositories.ScoreRepository;
+import br.allevi.quest4sale.repositories.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-import java.util.UUID;
+import java.math.BigDecimal;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class ScoreService {
 
     private final ScoreRepository scoreRepository;
+    private final SaleRepository saleRepository;
+    private final CompetitionRepository competitionRepository;
+    private final UserRepository userRepository;
+    private final RankingRepository rankingRepository;
 
-    public ScoreService(ScoreRepository scoreRepository) {
+    public ScoreService(ScoreRepository scoreRepository,
+                        SaleRepository saleRepository,
+                        CompetitionRepository competitionRepository,
+                        UserRepository userRepository,
+                        RankingRepository rankingRepository) {
         this.scoreRepository = scoreRepository;
+        this.saleRepository = saleRepository;
+        this.competitionRepository = competitionRepository;
+        this.userRepository = userRepository;
+        this.rankingRepository = rankingRepository;
     }
 
     @Transactional
@@ -38,37 +49,97 @@ public class ScoreService {
 
     @Transactional
     public Score calculateAndSaveScore(UUID saleId, UUID competitionId) {
-        // This is a placeholder implementation
-        // In a real implementation, you would:
-        // 1. Get the sale by ID
-        // 2. Get the competition by ID
-        // 3. Calculate the score based on sale amount and competition rules
-        // 4. Save the score
-        
-        Score score = new Score(); // You'll need to set proper values
-        return scoreRepository.save(score);
+        Optional<Score> existingScore = scoreRepository.findBySaleId(saleId);
+        if (existingScore.isPresent()) {
+            return existingScore.get();
+        }
+
+        Sale sale = saleRepository.findById(saleId)
+                .orElseThrow(() -> new ResourceNotFoundException("Venda não encontrada com ID: " + saleId));
+
+        Competition competition = competitionRepository.findById(competitionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Competição não encontrada com ID: " + competitionId));
+
+        BigDecimal points = sale.getAmount().multiply(new BigDecimal("0.10"));
+
+        Score score = Score.builder()
+                .user(sale.getUser())
+                .competition(competition)
+                .sale(sale)
+                .points(points)
+                .build();
+
+        Score savedScore = scoreRepository.save(score);
+
+        recalculateRanking(competitionId);
+
+        return savedScore;
     }
 
     @Transactional(readOnly = true)
     public List<Score> getUserScores(UUID userId, UUID competitionId) {
-        // This is a placeholder implementation
-        // You'll need to implement this based on your repository methods
-        return List.of(); // Return empty list for now
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado: " + userId));
+
+        Competition competition = competitionRepository.findById(competitionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Competição não encontrada: " + competitionId));
+
+        return scoreRepository.findByUserAndCompetition(user, competition);
     }
 
     @Transactional(readOnly = true)
     public Double getUserTotalScore(UUID userId, UUID competitionId) {
-        // This is a placeholder implementation
-        // You'll need to implement this based on your repository methods
-        return 0.0; // Return 0 for now
+        List<Score> scores = getUserScores(userId, competitionId);
+        return scores.stream()
+                .map(Score::getPoints)
+                .mapToDouble(BigDecimal::doubleValue)
+                .sum();
     }
 
     @Transactional
     public void recalculateRanking(UUID competitionId) {
-        // This is a placeholder implementation
-        // You'll need to implement ranking calculation logic
+        Competition competition = competitionRepository.findById(competitionId)
+                .orElseThrow(() -> new ResourceNotFoundException("Competição não encontrada"));
+
+        // 1. Buscar todos os scores dessa competição
+        List<Score> allScores = scoreRepository.findAll().stream()
+                .filter(s -> s.getCompetition().getId().equals(competitionId))
+                .toList();
+
+        // 2. Agrupar por usuário e somar pontos
+        Map<User, BigDecimal> userTotalScores = new HashMap<>();
+        for (Score s : allScores) {
+            userTotalScores.merge(s.getUser(), s.getPoints(), BigDecimal::add);
+        }
+
+        // 3. Atualizar ou Criar Ranking para cada usuário
+        List<Ranking> rankingsToSave = new ArrayList<>();
+
+        for (Map.Entry<User, BigDecimal> entry : userTotalScores.entrySet()) {
+            User user = entry.getKey();
+            BigDecimal total = entry.getValue();
+
+            Ranking ranking = rankingRepository.findByCompetitionIdAndUserId(competitionId, user.getId())
+                    .orElse(Ranking.builder()
+                            .competition(competition)
+                            .user(user)
+                            .rank(0)
+                            .totalScore(BigDecimal.ZERO)
+                            .build());
+
+            ranking.setTotalScore(total);
+            rankingsToSave.add(ranking);
+        }
+
+        // 4. Ordenar por pontuação (Maior primeiro)
+        rankingsToSave.sort((r1, r2) -> r2.getTotalScore().compareTo(r1.getTotalScore()));
+
+        // 5. Definir as posições (1º, 2º, 3º...)
+        int currentRank = 1;
+        for (Ranking r : rankingsToSave) {
+            r.setRank(currentRank++);
+        }
+
+        rankingRepository.saveAll(rankingsToSave);
     }
 }
-
-
-
