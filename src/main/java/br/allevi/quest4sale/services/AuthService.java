@@ -38,23 +38,18 @@ public class AuthService {
 
     @Transactional
     public LoginResponseDTO login(LoginRequestDTO loginRequest) {
+        // ... (seu código de login já estava certo)
         log.info("Tentativa de login para usuário: {}", loginRequest.getUsername());
 
         User user = userRepository.findByUsername(loginRequest.getUsername())
-                .orElseThrow(() -> {
-                    log.warn("Falha no login: Usuário não encontrado - {}", loginRequest.getUsername());
-                    return new UnauthorizedException("Credenciais inválidas");
-                });
+                .orElseThrow(() -> new UnauthorizedException("Credenciais inválidas"));
 
         if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
-            log.warn("Falha no login: Senha incorreta para usuário - {}", loginRequest.getUsername());
             throw new UnauthorizedException("Credenciais inválidas");
         }
 
         String roleName = user.getRoles().isEmpty() ? "SELLER" : user.getRoles().iterator().next().getName();
         String token = tokenProvider.generateToken(user.getId(), user.getUsername(), roleName);
-
-        log.info("Login bem-sucedido para usuário: {} (ID: {}, Role: {})", user.getUsername(), user.getId(), roleName);
 
         return LoginResponseDTO.builder()
                 .token(token)
@@ -68,21 +63,20 @@ public class AuthService {
 
     @Transactional
     public LoginResponseDTO register(RegisterRequestDTO registerRequest) {
-        log.info("Tentativa de registro para usuário: {} (email: {})",
-                 registerRequest.getUsername(), registerRequest.getEmail());
-
+        // ... (seu código novo de registro que lê roleName)
         if (userRepository.findByUsername(registerRequest.getUsername()).isPresent()) {
-            log.warn("Falha no registro: Username já em uso - {}", registerRequest.getUsername());
             throw new BadRequestException("Username já está em uso");
         }
-
         if (userRepository.findByEmail(registerRequest.getEmail()).isPresent()) {
-            log.warn("Falha no registro: Email já em uso - {}", registerRequest.getEmail());
             throw new BadRequestException("Email já está em uso");
         }
 
         Role role;
-        if (registerRequest.getRoleId() != null) {
+        if (registerRequest.getRole() != null && !registerRequest.getRole().isEmpty()) {
+            String roleName = registerRequest.getRole().toUpperCase();
+            role = roleRepository.findByName(roleName)
+                    .orElseThrow(() -> new ResourceNotFoundException("Role não encontrada: " + roleName));
+        } else if (registerRequest.getRoleId() != null) {
             role = roleRepository.findById(registerRequest.getRoleId())
                     .orElseThrow(() -> new ResourceNotFoundException("Role não encontrada"));
         } else {
@@ -99,15 +93,12 @@ public class AuthService {
                 .password(passwordEncoder.encode(registerRequest.getPassword()))
                 .firstName(registerRequest.getFirstName())
                 .lastName(registerRequest.getLastName())
+                .avatarUrl(registerRequest.getAvatarUrl()) // Agora vai funcionar porque o DTO está certo
                 .roles(roles)
                 .build();
 
         user = userRepository.save(user);
-
         String token = tokenProvider.generateToken(user.getId(), user.getUsername(), role.getName());
-
-        log.info("Registro bem-sucedido para usuário: {} (ID: {}, Role: {})",
-                 user.getUsername(), user.getId(), role.getName());
 
         return LoginResponseDTO.builder()
                 .token(token)
