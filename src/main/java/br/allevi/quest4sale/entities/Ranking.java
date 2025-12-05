@@ -1,5 +1,6 @@
 package br.allevi.quest4sale.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -22,6 +23,7 @@ import java.util.UUID;
 @Setter
 @ToString(exclude = {"user", "competition"})
 @EqualsAndHashCode(of = "id")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Ranking {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

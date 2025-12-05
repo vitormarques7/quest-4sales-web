@@ -1,5 +1,7 @@
 package br.allevi.quest4sale.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore; // Importante para evitar o loop
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -23,6 +25,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -42,7 +45,6 @@ public class User {
     @NotBlank
     @Size(min = 6)
     private String password;
-
 
     @Column(name = "first_name", nullable = false)
     @NotBlank
@@ -75,18 +77,22 @@ public class User {
     @Builder.Default
     private Set<Role> roles = new HashSet<>();
 
+    @JsonIgnore
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     @Builder.Default
     private Set<Sale> sales = new HashSet<>();
 
+    @JsonIgnore
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     @Builder.Default
     private Set<Score> scores = new HashSet<>();
 
+    @JsonIgnore
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     @Builder.Default
     private Set<Ranking> rankings = new HashSet<>();
 
+    @JsonIgnore
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     @Builder.Default
     private Set<Notification> notifications = new HashSet<>();
