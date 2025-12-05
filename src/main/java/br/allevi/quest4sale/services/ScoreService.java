@@ -3,32 +3,38 @@ package br.allevi.quest4sale.services;
 import br.allevi.quest4sale.entities.*;
 import br.allevi.quest4sale.exceptions.ResourceNotFoundException;
 import br.allevi.quest4sale.repositories.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.stream.Collectors;
+import java.util.concurrent.atomic.AtomicInteger;
 
+@Slf4j
 @Service
 public class ScoreService {
 
     private final ScoreRepository scoreRepository;
     private final SaleRepository saleRepository;
     private final CompetitionRepository competitionRepository;
-    private final UserRepository userRepository;
+    // private final RuleRepository ruleRepository;
     private final RankingRepository rankingRepository;
+    private final NotificationService notificationService;
 
-    public ScoreService(ScoreRepository scoreRepository,
-                        SaleRepository saleRepository,
-                        CompetitionRepository competitionRepository,
-                        UserRepository userRepository,
-                        RankingRepository rankingRepository) {
+    public ScoreService(
+            ScoreRepository scoreRepository,
+            SaleRepository saleRepository,
+            CompetitionRepository competitionRepository,
+            // RuleRepository ruleRepository,
+            RankingRepository rankingRepository,
+            NotificationService notificationService) {
         this.scoreRepository = scoreRepository;
         this.saleRepository = saleRepository;
         this.competitionRepository = competitionRepository;
-        this.userRepository = userRepository;
+        // this.ruleRepository = ruleRepository;
         this.rankingRepository = rankingRepository;
+        this.notificationService = notificationService;
     }
 
     @Transactional
@@ -49,6 +55,9 @@ public class ScoreService {
 
     @Transactional
     public Score calculateAndSaveScore(UUID saleId, UUID competitionId) {
+        log.info("Calculando pontuação para venda ID: {} na competição ID: {}", saleId, competitionId);
+
+
         Optional<Score> existingScore = scoreRepository.findBySaleId(saleId);
         if (existingScore.isPresent()) {
             return existingScore.get();
@@ -60,17 +69,20 @@ public class ScoreService {
         Competition competition = competitionRepository.findById(competitionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Competição não encontrada com ID: " + competitionId));
 
-        BigDecimal points = sale.getAmount().multiply(new BigDecimal("0.10"));
+        BigDecimal totalPoints = sale.getAmount().multiply(new BigDecimal("0.10"));
+
+        log.info("Pontos calculados (Regra 10%): {}", totalPoints);
 
         Score score = Score.builder()
                 .user(sale.getUser())
                 .competition(competition)
                 .sale(sale)
-                .points(points)
+                .points(totalPoints)
                 .build();
 
         Score savedScore = scoreRepository.save(score);
 
+        // 6. Recalcular ranking (Versão Remota com Notificações)
         recalculateRanking(competitionId);
 
         return savedScore;
@@ -78,68 +90,85 @@ public class ScoreService {
 
     @Transactional(readOnly = true)
     public List<Score> getUserScores(UUID userId, UUID competitionId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("Usuário não encontrado: " + userId));
-
-        Competition competition = competitionRepository.findById(competitionId)
-                .orElseThrow(() -> new ResourceNotFoundException("Competição não encontrada: " + competitionId));
-
-        return scoreRepository.findByUserAndCompetition(user, competition);
+        // Adaptado para garantir compatibilidade
+        User user = new User(); user.setId(userId);
+        Competition comp = new Competition(); comp.setId(competitionId);
+        return scoreRepository.findByUserAndCompetition(user, comp);
     }
 
     @Transactional(readOnly = true)
-    public Double getUserTotalScore(UUID userId, UUID competitionId) {
+    public BigDecimal getUserTotalScore(UUID userId, UUID competitionId) {
+        // Cálculo simples via stream
         List<Score> scores = getUserScores(userId, competitionId);
         return scores.stream()
                 .map(Score::getPoints)
-                .mapToDouble(BigDecimal::doubleValue)
-                .sum();
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     @Transactional
     public void recalculateRanking(UUID competitionId) {
+        log.info("Recalculando ranking para competição ID: {}", competitionId);
+
         Competition competition = competitionRepository.findById(competitionId)
-                .orElseThrow(() -> new ResourceNotFoundException("Competição não encontrada"));
+                .orElseThrow(() -> new ResourceNotFoundException("Competição não encontrada com ID: " + competitionId));
 
-        // 1. Buscar todos os scores dessa competição
-        List<Score> allScores = scoreRepository.findAll().stream()
-                .filter(s -> s.getCompetition().getId().equals(competitionId))
-                .toList();
+        // Buscar todos os scores e somar
+        Map<UUID, BigDecimal> userTotalScores = new HashMap<>();
+        scoreRepository.findAll().stream()
+                .filter(score -> score.getCompetition().getId().equals(competitionId))
+                .forEach(score -> {
+                    UUID userId = score.getUser().getId();
+                    userTotalScores.merge(userId, score.getPoints(), BigDecimal::add);
+                });
 
-        // 2. Agrupar por usuário e somar pontos
-        Map<User, BigDecimal> userTotalScores = new HashMap<>();
-        for (Score s : allScores) {
-            userTotalScores.merge(s.getUser(), s.getPoints(), BigDecimal::add);
+        if (userTotalScores.isEmpty()) return;
+
+        List<Map.Entry<UUID, BigDecimal>> sortedScores = new ArrayList<>(userTotalScores.entrySet());
+        sortedScores.sort((e1, e2) -> e2.getValue().compareTo(e1.getValue()));
+
+        Map<UUID, Integer> oldRanks = new HashMap<>();
+        rankingRepository.findByCompetitionIdOrderByRankAsc(competitionId)
+                .forEach(r -> oldRanks.put(r.getUser().getId(), r.getRank()));
+
+        AtomicInteger rank = new AtomicInteger(1);
+
+        sortedScores.forEach(entry -> {
+            UUID userId = entry.getKey();
+            BigDecimal totalScore = entry.getValue();
+            int currentRank = rank.getAndIncrement();
+
+            Optional<Ranking> existingRanking = rankingRepository.findByCompetitionIdAndUserId(competitionId, userId);
+
+            if (existingRanking.isPresent()) {
+                Ranking ranking = existingRanking.get();
+                Integer oldRank = ranking.getRank();
+
+                ranking.setRank(currentRank);
+                ranking.setTotalScore(totalScore);
+                rankingRepository.save(ranking);
+
+                checkAndNotifyRankChange(userId, competitionId, oldRank, currentRank);
+            } else {
+                Ranking newRanking = Ranking.builder()
+                        .competition(competition)
+                        .user(User.builder().id(userId).build())
+                        .rank(currentRank)
+                        .totalScore(totalScore)
+                        .build();
+                rankingRepository.save(newRanking);
+
+                notificationService.notifyRankingEntry(userId, competitionId, currentRank);
+            }
+        });
+    }
+
+    private void checkAndNotifyRankChange(UUID userId, UUID competitionId, Integer oldRank, Integer newRank) {
+        if (oldRank == null || oldRank.equals(newRank)) return;
+
+        if (newRank < oldRank) {
+            notificationService.notifyRankImprovement(userId, competitionId, oldRank, newRank);
+        } else if (newRank > oldRank) {
+            notificationService.notifyRankDrop(userId, competitionId, oldRank, newRank);
         }
-
-        // 3. Atualizar ou Criar Ranking para cada usuário
-        List<Ranking> rankingsToSave = new ArrayList<>();
-
-        for (Map.Entry<User, BigDecimal> entry : userTotalScores.entrySet()) {
-            User user = entry.getKey();
-            BigDecimal total = entry.getValue();
-
-            Ranking ranking = rankingRepository.findByCompetitionIdAndUserId(competitionId, user.getId())
-                    .orElse(Ranking.builder()
-                            .competition(competition)
-                            .user(user)
-                            .rank(0)
-                            .totalScore(BigDecimal.ZERO)
-                            .build());
-
-            ranking.setTotalScore(total);
-            rankingsToSave.add(ranking);
-        }
-
-        // 4. Ordenar por pontuação (Maior primeiro)
-        rankingsToSave.sort((r1, r2) -> r2.getTotalScore().compareTo(r1.getTotalScore()));
-
-        // 5. Definir as posições (1º, 2º, 3º...)
-        int currentRank = 1;
-        for (Ranking r : rankingsToSave) {
-            r.setRank(currentRank++);
-        }
-
-        rankingRepository.saveAll(rankingsToSave);
     }
 }

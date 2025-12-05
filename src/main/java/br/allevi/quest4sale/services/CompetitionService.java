@@ -5,6 +5,7 @@ import br.allevi.quest4sale.entities.Enums.CompetitionStatus;
 import br.allevi.quest4sale.exceptions.InvalidStateException;
 import br.allevi.quest4sale.exceptions.ResourceNotFoundException;
 import br.allevi.quest4sale.repositories.CompetitionRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,13 +14,18 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @Service
 public class CompetitionService {
 
     private final CompetitionRepository competitionRepository;
+    private final NotificationService notificationService;
 
-    public CompetitionService(CompetitionRepository competitionRepository) {
+    public CompetitionService(
+            CompetitionRepository competitionRepository,
+            NotificationService notificationService) {
         this.competitionRepository = competitionRepository;
+        this.notificationService = notificationService;
     }
 
     @Transactional(readOnly = true)
@@ -45,7 +51,16 @@ public class CompetitionService {
 
     @Transactional
     public Competition create(Competition competition) {
+        // Validações
+        validateCompetition(competition);
+
         return competitionRepository.save(competition);
+    }
+
+    private void validateCompetition(Competition competition) {
+        if (competition.getEndDate().isBefore(competition.getStartDate())) {
+            throw new InvalidStateException("Data de fim não pode ser anterior à data de início");
+        }
     }
 
     @Transactional
@@ -65,6 +80,8 @@ public class CompetitionService {
 
     @Transactional
     public void startCompetition(UUID id) {
+        log.info("Iniciando competição ID: {}", id);
+
         Competition competition = competitionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Competition não encontrada com ID: " + id));
 
@@ -74,15 +91,37 @@ public class CompetitionService {
 
         competition.setStatus(CompetitionStatus.ATIVA);
         competitionRepository.save(competition);
+
+        log.info("Competição iniciada: {} (ID: {})", competition.getName(), id);
+
+        // Notificar todos os usuários sobre o início da competição
+        try {
+            notificationService.notifyCompetitionStarted(id);
+            log.info("Notificações de início enviadas para competição ID: {}", id);
+        } catch (Exception e) {
+            log.error("Erro ao enviar notificações de início da competição ID {}: {}", id, e.getMessage(), e);
+        }
     }
 
     @Transactional
     public void finishCompetition(UUID id) {
+        log.info("Finalizando competição ID: {}", id);
+
         Competition competition = competitionRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Competition não encontrada com ID: " + id));
 
         competition.setStatus(CompetitionStatus.FINALIZADA);
         competitionRepository.save(competition);
+
+        log.info("Competição finalizada: {} (ID: {})", competition.getName(), id);
+
+        // Notificar todos os usuários sobre o fim da competição
+        try {
+            notificationService.notifyCompetitionFinished(id);
+            log.info("Notificações de finalização enviadas para competição ID: {}", id);
+        } catch (Exception e) {
+            log.error("Erro ao enviar notificações de finalização da competição ID {}: {}", id, e.getMessage(), e);
+        }
     }
 
     @Transactional

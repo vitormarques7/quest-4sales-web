@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -32,10 +33,10 @@ public class ScoreController {
     }
 
     @GetMapping("/user/{userId}/competition/{competitionId}/total")
-    public ResponseEntity<Double> getUserTotalScore(
+    public ResponseEntity<BigDecimal> getUserTotalScore(
             @PathVariable UUID userId,
             @PathVariable UUID competitionId) {
-        Double total = scoreService.getUserTotalScore(userId, competitionId);
+        BigDecimal total = scoreService.getUserTotalScore(userId, competitionId);
         return ResponseEntity.ok(total);
     }
 
