@@ -32,20 +32,15 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/auth/**").permitAll()
-
+                        .requestMatchers("/api/auth/login").permitAll()
+                        .requestMatchers("/api/auth/**").authenticated()
                         .requestMatchers(HttpMethod.GET, "/api/competitions/**").permitAll()
-                        .requestMatchers("/api/competitions/**").hasAnyRole("ADMIN", "MANAGER") // <--- A LINHA NOVA É ESSA AQUI!
-
-                        .requestMatchers("/api/users/**").hasAnyRole("ADMIN", "MANAGER")
-
+                        .requestMatchers("/api/competitions/**").hasRole("ADMIN")
+                        .requestMatchers("/api/users/**").hasRole("MANAGER")
                         .requestMatchers("/api/sales/**").hasAnyRole("ADMIN", "MANAGER", "SELLER")
                         .requestMatchers("/api/scores/**").hasAnyRole("ADMIN", "MANAGER", "SELLER")
-
                         .requestMatchers("/api/ranking/**").permitAll()
-
                         .requestMatchers("/api/notifications/**").authenticated()
-
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

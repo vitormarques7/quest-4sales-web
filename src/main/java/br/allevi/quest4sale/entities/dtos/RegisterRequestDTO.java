@@ -34,5 +34,5 @@ public class RegisterRequestDTO {
 
     private UUID roleId;
 
-    private String role; // <--- O campo necessário para funcionar o "ADMIN"
+    private String role; 
 }
