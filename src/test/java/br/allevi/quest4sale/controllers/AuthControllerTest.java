@@ -1,7 +1,7 @@
 package br.allevi.quest4sale.controllers;
 
-import br.allevi.quest4sale.dtos.LoginRequestDTO;
-import br.allevi.quest4sale.dtos.RegisterRequestDTO;
+import br.allevi.quest4sale.entities.dtos.LoginRequestDTO;
+import br.allevi.quest4sale.entities.dtos.RegisterRequestDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
