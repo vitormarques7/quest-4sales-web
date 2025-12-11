@@ -1,12 +1,6 @@
-package br.allevi.quest4sale.controllers;
+package br.allevi.quest4sale.exceptions;
 
 import br.allevi.quest4sale.entities.dtos.ApiErrorResponse;
-import br.allevi.quest4sale.exceptions.BadRequestException;
-import br.allevi.quest4sale.exceptions.ConflictException;
-import br.allevi.quest4sale.exceptions.ForbiddenException;
-import br.allevi.quest4sale.exceptions.InvalidStateException;
-import br.allevi.quest4sale.exceptions.ResourceNotFoundException;
-import br.allevi.quest4sale.exceptions.UnauthorizedException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
