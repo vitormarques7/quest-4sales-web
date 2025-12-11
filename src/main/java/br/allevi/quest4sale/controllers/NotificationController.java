@@ -1,6 +1,6 @@
 package br.allevi.quest4sale.controllers;
 
-import br.allevi.quest4sale.entities.Notification;
+import br.allevi.quest4sale.entities.dtos.NotificationDTO;
 import br.allevi.quest4sale.services.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -17,12 +17,12 @@ public class NotificationController {
     private final NotificationService notificationService;
 
     @GetMapping("/user/{userId}")
-    public List<Notification> getUserNotifications(@PathVariable UUID userId) {
+    public List<NotificationDTO> getUserNotifications(@PathVariable UUID userId) {
         return notificationService.getUserNotifications(userId);
     }
 
     @GetMapping("/user/{userId}/unread")
-    public List<Notification> getUnreadNotifications(@PathVariable UUID userId) {
+    public List<NotificationDTO> getUnreadNotifications(@PathVariable UUID userId) {
         return notificationService.getUnreadNotifications(userId);
     }
 
