@@ -23,5 +23,12 @@ public class CreateUserDTO {
     @NotBlank
     @Size(min = 8, max = 100)
     private String password;
+    @NotBlank
+    @Size(max = 50)
+    private String firstName;
+    @NotBlank
+    @Size(max = 50)
+    private String lastName;
     private String avatarUrl;
+    private String role;
 }
