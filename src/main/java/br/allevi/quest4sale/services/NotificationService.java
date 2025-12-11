@@ -4,6 +4,7 @@ import br.allevi.quest4sale.entities.Competition;
 import br.allevi.quest4sale.entities.Notification;
 import br.allevi.quest4sale.entities.User;
 import br.allevi.quest4sale.entities.Enums.NotificationType;
+import br.allevi.quest4sale.entities.dtos.NotificationDTO;
 import br.allevi.quest4sale.exceptions.ResourceNotFoundException;
 import br.allevi.quest4sale.repositories.CompetitionRepository;
 import br.allevi.quest4sale.repositories.NotificationRepository;
@@ -15,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -26,14 +28,35 @@ public class NotificationService {
     private final UserRepository userRepository;
     private final CompetitionRepository competitionRepository;
 
-    @Transactional(readOnly = true)
-    public List<Notification> getUserNotifications(UUID userId) {
-        return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId);
+    private NotificationDTO toDTO(Notification notification) {
+        return NotificationDTO.builder()
+                .id(notification.getId())
+                .userId(notification.getUser().getId())
+                .userName(notification.getUser().getUsername())
+                .competitionId(notification.getCompetition() != null ? notification.getCompetition().getId() : null)
+                .competitionName(notification.getCompetition() != null ? notification.getCompetition().getName() : null)
+                .type(notification.getType())
+                .title(notification.getTitle())
+                .message(notification.getMessage())
+                .isRead(notification.getIsRead())
+                .createdAt(notification.getCreatedAt())
+                .build();
     }
 
     @Transactional(readOnly = true)
-    public List<Notification> getUnreadNotifications(UUID userId) {
-        return notificationRepository.findByUserIdAndIsReadFalseOrderByCreatedAtDesc(userId);
+    public List<NotificationDTO> getUserNotifications(UUID userId) {
+        return notificationRepository.findByUserIdOrderByCreatedAtDesc(userId)
+                .stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<NotificationDTO> getUnreadNotifications(UUID userId) {
+        return notificationRepository.findByUserIdAndIsReadFalseOrderByCreatedAtDesc(userId)
+                .stream()
+                .map(this::toDTO)
+                .collect(Collectors.toList());
     }
 
     @Transactional(readOnly = true)
