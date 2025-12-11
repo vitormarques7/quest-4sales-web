@@ -2,6 +2,7 @@ package br.allevi.quest4sale.controllers;
 
 import br.allevi.quest4sale.entities.User;
 import br.allevi.quest4sale.entities.dtos.CreateUserDTO;
+import br.allevi.quest4sale.entities.dtos.UpdateUserDTO;
 import br.allevi.quest4sale.services.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -41,8 +42,8 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
     @PutMapping("/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable UUID id, @RequestBody User userDetails) {
-        User updatedUser = userService.update(id, userDetails);
+    public ResponseEntity<User> updateUser(@PathVariable UUID id, @Valid @RequestBody UpdateUserDTO updateUserDTO) {
+        User updatedUser = userService.update(id, updateUserDTO);
         return ResponseEntity.ok(updatedUser);
     }
     @DeleteMapping("/{id}")
