@@ -23,8 +23,8 @@ public class SecurityConfig {
     private final CustomAccessDeniedHandler accessDeniedHandler;
 
     public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter,
-                         CustomAuthenticationEntryPoint authenticationEntryPoint,
-                         CustomAccessDeniedHandler accessDeniedHandler) {
+                          CustomAuthenticationEntryPoint authenticationEntryPoint,
+                          CustomAccessDeniedHandler accessDeniedHandler) {
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.authenticationEntryPoint = authenticationEntryPoint;
         this.accessDeniedHandler = accessDeniedHandler;
@@ -45,14 +45,23 @@ public class SecurityConfig {
                         .requestMatchers("/api/auth/login").permitAll()
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/api/auth/**").authenticated()
+                        // Competições
                         .requestMatchers(HttpMethod.GET, "/api/competitions/**").permitAll()
                         .requestMatchers("/api/competitions/**").hasRole("ADMIN")
-                        .requestMatchers("/api/users/**").hasRole("MANAGER")
+                        // Usuários
+                        .requestMatchers("/api/users/**").hasAnyRole("ADMIN", "MANAGER")
+                        // Vendas
                         .requestMatchers(HttpMethod.GET, "/api/sales/**").hasAnyRole("ADMIN", "MANAGER", "SELLER")
-                        .requestMatchers("/api/sales/**").denyAll()
+                        .requestMatchers("/api/sales/**").hasAnyRole("ADMIN", "MANAGER", "SELLER") // Permite POST para criar venda
+                        // Scores e Ranking
                         .requestMatchers("/api/scores/**").hasAnyRole("ADMIN", "MANAGER", "SELLER")
                         .requestMatchers("/api/ranking/**").permitAll()
+                        // Notificações
                         .requestMatchers("/api/notifications/**").authenticated()
+                        // REGRAS (Adicionado)
+                        .requestMatchers(HttpMethod.GET, "/api/rules/**").authenticated()
+                        .requestMatchers("/api/rules/**").hasAnyRole("ADMIN", "MANAGER")
+                        
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(exceptions -> exceptions

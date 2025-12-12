@@ -11,11 +11,7 @@ import java.util.UUID;
 public interface NotificationRepository extends JpaRepository<Notification, UUID> {
 
     List<Notification> findByUserIdOrderByCreatedAtDesc(UUID userId);
-
-    // CORRIGIDO: De 'ReadFalse' para 'IsReadFalse' para combinar com o campo 'isRead' da entidade
     List<Notification> findByUserIdAndIsReadFalseOrderByCreatedAtDesc(UUID userId);
-
-    // CORRIGIDO: De 'ReadFalse' para 'IsReadFalse'
     List<Notification> findByUserIdAndIsReadFalse(UUID userId);
 
     @Query("SELECT COUNT(n) FROM Notification n WHERE n.user.id = :userId AND n.isRead = false")

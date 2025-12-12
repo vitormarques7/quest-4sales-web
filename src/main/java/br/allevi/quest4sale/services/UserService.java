@@ -196,6 +196,6 @@ public class UserService {
     }
 
     public Page<User> findSellers(Pageable pageable) {
-        return userRepository.findByActiveTrue(pageable);
+        return userRepository.findActiveSellers(pageable);
     }
 }

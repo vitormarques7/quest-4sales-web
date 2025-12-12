@@ -110,7 +110,6 @@ public class JwtTokenProvider {
                     .parseSignedClaims(token)
                     .getPayload();
 
-            // Validar issuer
             String issuer = claims.getIssuer();
             if (issuer == null || !issuer.equals("quest4sale-api")) {
                 return false;

@@ -18,23 +18,23 @@ public class ScoreService {
     private final ScoreRepository scoreRepository;
     private final SaleRepository saleRepository;
     private final CompetitionRepository competitionRepository;
-    // private final RuleRepository ruleRepository;
     private final RankingRepository rankingRepository;
     private final NotificationService notificationService;
+    private final RuleService ruleService;
 
     public ScoreService(
             ScoreRepository scoreRepository,
             SaleRepository saleRepository,
             CompetitionRepository competitionRepository,
-            // RuleRepository ruleRepository,
             RankingRepository rankingRepository,
-            NotificationService notificationService) {
+            NotificationService notificationService,
+            RuleService ruleService) {
         this.scoreRepository = scoreRepository;
         this.saleRepository = saleRepository;
         this.competitionRepository = competitionRepository;
-        // this.ruleRepository = ruleRepository;
         this.rankingRepository = rankingRepository;
         this.notificationService = notificationService;
+        this.ruleService = ruleService;
     }
 
     @Transactional
@@ -57,7 +57,6 @@ public class ScoreService {
     public Score calculateAndSaveScore(UUID saleId, UUID competitionId) {
         log.info("Calculando pontuação para venda ID: {} na competição ID: {}", saleId, competitionId);
 
-
         Optional<Score> existingScore = scoreRepository.findBySaleId(saleId);
         if (existingScore.isPresent()) {
             return existingScore.get();
@@ -69,9 +68,13 @@ public class ScoreService {
         Competition competition = competitionRepository.findById(competitionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Competição não encontrada com ID: " + competitionId));
 
-        BigDecimal totalPoints = sale.getAmount().multiply(new BigDecimal("0.10"));
+        // Busca a regra ativa para esta competição (agora retorna Rule diretamente ou lista dependendo da implementação, ajustado para lista abaixo para manter compatibilidade)
+        List<Rule> rules = ruleService.findByCompetitionId(competitionId); 
 
-        log.info("Pontos calculados (Regra 10%): {}", totalPoints);
+        // Calcula pontos usando a lista de regras (que conterá apenas 1 regra baseada na sua estrutura atual)
+        BigDecimal totalPoints = calculatePoints(sale, rules);
+
+        log.info("Pontos calculados: {} para a venda {}", totalPoints, saleId);
 
         Score score = Score.builder()
                 .user(sale.getUser())
@@ -82,7 +85,6 @@ public class ScoreService {
 
         Score savedScore = scoreRepository.save(score);
 
-        // 6. Recalcular ranking (Versão Remota com Notificações)
         recalculateRanking(competitionId);
 
         return savedScore;
@@ -90,7 +92,6 @@ public class ScoreService {
 
     @Transactional(readOnly = true)
     public List<Score> getUserScores(UUID userId, UUID competitionId) {
-        // Adaptado para garantir compatibilidade
         User user = new User(); user.setId(userId);
         Competition comp = new Competition(); comp.setId(competitionId);
         return scoreRepository.findByUserAndCompetition(user, comp);
@@ -98,7 +99,6 @@ public class ScoreService {
 
     @Transactional(readOnly = true)
     public BigDecimal getUserTotalScore(UUID userId, UUID competitionId) {
-        // Cálculo simples via stream
         List<Score> scores = getUserScores(userId, competitionId);
         return scores.stream()
                 .map(Score::getPoints)
@@ -112,7 +112,6 @@ public class ScoreService {
         Competition competition = competitionRepository.findById(competitionId)
                 .orElseThrow(() -> new ResourceNotFoundException("Competição não encontrada com ID: " + competitionId));
 
-        // Buscar todos os scores e somar
         Map<UUID, BigDecimal> userTotalScores = new HashMap<>();
         scoreRepository.findAll().stream()
                 .filter(score -> score.getCompetition().getId().equals(competitionId))
@@ -170,5 +169,53 @@ public class ScoreService {
         } else if (newRank > oldRank) {
             notificationService.notifyRankDrop(userId, competitionId, oldRank, newRank);
         }
+    }
+
+    /**
+     * Calcula os pontos de uma venda com base nos pesos definidos na regra da competição.
+     * A lógica foi ajustada para usar os campos reais da entidade Rule:
+     * - valueWeight: Peso sobre o valor monetário da venda
+     * - itemsWeight: Peso sobre a quantidade de itens
+     * - positivationWeight: Pontos fixos se for positivação (cliente novo)
+     * - tripWeight: Peso sobre a quantidade de viagens
+     */
+    private BigDecimal calculatePoints(Sale sale, List<Rule> rules) {
+        BigDecimal totalPoints = BigDecimal.ZERO;
+
+        if (rules == null || rules.isEmpty()) {
+            log.warn("Nenhuma regra encontrada para calcular pontos.");
+            // Poderia retornar uma pontuação padrão aqui se desejado
+            return totalPoints;
+        }
+
+        // Assume-se que há apenas uma regra ativa por competição na lista,
+        // mas iteramos caso a lógica mude futuramente para múltiplas regras.
+        for (Rule rule : rules) {
+            
+            // 1. Pontos pelo Valor da Venda (Amount * Peso)
+            if (rule.getValueWeight() != null && sale.getAmount() != null) {
+                BigDecimal valuePoints = sale.getAmount().multiply(rule.getValueWeight());
+                totalPoints = totalPoints.add(valuePoints);
+            }
+
+            // 2. Pontos pela Quantidade de Itens (Qtd * Peso)
+            if (rule.getItemsWeight() != null && sale.getQuantity() != null) {
+                BigDecimal itemsPoints = BigDecimal.valueOf(sale.getQuantity()).multiply(rule.getItemsWeight());
+                totalPoints = totalPoints.add(itemsPoints);
+            }
+
+            // 3. Pontos por Positivação (Fixo se true)
+            if (rule.getPositivationWeight() != null && Boolean.TRUE.equals(sale.getPositiveSale())) {
+                totalPoints = totalPoints.add(rule.getPositivationWeight());
+            }
+
+            // 4. Pontos por Viagens (Qtd Viagens * Peso)
+            if (rule.getTripWeight() != null && sale.getTravelQuantity() != null) {
+                BigDecimal tripPoints = BigDecimal.valueOf(sale.getTravelQuantity()).multiply(rule.getTripWeight());
+                totalPoints = totalPoints.add(tripPoints);
+            }
+        }
+
+        return totalPoints;
     }
 }

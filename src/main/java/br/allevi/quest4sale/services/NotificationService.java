@@ -79,9 +79,7 @@ public class NotificationService {
         notificationRepository.saveAll(notifications);
     }
 
-    /**
-     * Notifica quando um usuário entra no ranking pela primeira vez
-     */
+
     @Transactional
     public void notifyRankingEntry(UUID userId, UUID competitionId, int rank) {
         log.info("Criando notificação de entrada no ranking: User ID={}, Competition ID={}, Rank={}",
@@ -110,9 +108,7 @@ public class NotificationService {
         log.info("Notificação de entrada no ranking criada com sucesso");
     }
 
-    /**
-     * Notifica quando um usuário sobe de posição no ranking
-     */
+
     @Transactional
     public void notifyRankImprovement(UUID userId, UUID competitionId, int oldRank, int newRank) {
         log.info("Criando notificação de melhoria no ranking: User ID={}, Old Rank={}, New Rank={}",
@@ -152,9 +148,7 @@ public class NotificationService {
         log.info("Notificação de melhoria no ranking criada com sucesso");
     }
 
-    /**
-     * Notifica quando um usuário cai de posição no ranking
-     */
+
     @Transactional
     public void notifyRankDrop(UUID userId, UUID competitionId, int oldRank, int newRank) {
         log.info("Criando notificação de queda no ranking: User ID={}, Old Rank={}, New Rank={}",
@@ -187,9 +181,7 @@ public class NotificationService {
         log.info("Notificação de queda no ranking criada com sucesso");
     }
 
-    /**
-     * Notifica quando uma competição é iniciada
-     */
+
     @Transactional
     public void notifyCompetitionStarted(UUID competitionId) {
         log.info("Criando notificações de início de competição: Competition ID={}", competitionId);
@@ -219,9 +211,7 @@ public class NotificationService {
         log.info("Notificações de início de competição criadas para {} usuários", allUsers.size());
     }
 
-    /**
-     * Notifica quando uma competição é finalizada
-     */
+
     @Transactional
     public void notifyCompetitionFinished(UUID competitionId) {
         log.info("Criando notificações de fim de competição: Competition ID={}", competitionId);

@@ -38,8 +38,6 @@ public class AuthService {
 
     @Transactional
     public LoginResponseDTO login(LoginRequestDTO loginRequest) {
-        // ... (seu código de login já estava certo)
-        log.info("Tentativa de login para usuário: {}", loginRequest.getUsername());
 
         User user = userRepository.findByUsername(loginRequest.getUsername())
                 .orElseThrow(() -> new UnauthorizedException("Credenciais inválidas"));
@@ -63,7 +61,6 @@ public class AuthService {
 
     @Transactional
     public LoginResponseDTO register(RegisterRequestDTO registerRequest) {
-        // ... (seu código novo de registro que lê roleName)
         if (userRepository.findByUsername(registerRequest.getUsername()).isPresent()) {
             throw new BadRequestException("Username já está em uso");
         }
@@ -93,7 +90,7 @@ public class AuthService {
                 .password(passwordEncoder.encode(registerRequest.getPassword()))
                 .firstName(registerRequest.getFirstName())
                 .lastName(registerRequest.getLastName())
-                .avatarUrl(registerRequest.getAvatarUrl()) // Agora vai funcionar porque o DTO está certo
+                .avatarUrl(registerRequest.getAvatarUrl()) 
                 .roles(roles)
                 .build();
 

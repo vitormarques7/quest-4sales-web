@@ -8,11 +8,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface RankingRepository extends JpaRepository<Ranking, UUID> {
-    
+
     List<Ranking> findByCompetitionIdOrderByRankAsc(UUID competitionId);
-    
+
+    List<Ranking> findByCompetitionIdOrderByTotalScoreDesc(UUID competitionId);
+
     Optional<Ranking> findByCompetitionIdAndUserId(UUID competitionId, UUID userId);
-    
+
     List<Ranking> findByCompetitionIdAndRankBetween(UUID competitionId, Integer startRank, Integer endRank);
 }
 

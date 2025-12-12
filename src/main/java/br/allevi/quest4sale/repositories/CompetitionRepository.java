@@ -11,6 +11,8 @@ import java.util.UUID;
 public interface CompetitionRepository extends JpaRepository<Competition, UUID> {
     List<Competition> findByStartDateLessThanEqualAndEndDateGreaterThanEqual(LocalDate start, LocalDate end);
     List<Competition> findByStatus(CompetitionStatus status);
+    List<Competition> findByActiveTrue();
+    List<Competition> findByActiveTrueAndStatus(CompetitionStatus status);
 }
 
 

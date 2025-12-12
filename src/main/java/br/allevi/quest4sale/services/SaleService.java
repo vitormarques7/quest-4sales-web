@@ -85,22 +85,18 @@ public class SaleService {
 
     @Transactional
     public Sale create(Sale sale) {
-        // Validações
         validateSale(sale);
 
-        // Salvar venda
         Sale savedSale = saleRepository.save(sale);
         log.info("Venda criada: ID={}, User ID={}, Amount={}, Date={}",
                 savedSale.getId(), savedSale.getUser().getId(), savedSale.getAmount(), savedSale.getSaleDate());
 
-        // Buscar competições ativas no período da venda
         List<Competition> activeCompetitions = competitionRepository
                 .findByStartDateLessThanEqualAndEndDateGreaterThanEqual(
                         savedSale.getSaleDate(),
                         savedSale.getSaleDate()
                 );
 
-        // Filtrar apenas competições ATIVAS
         List<Competition> validCompetitions = activeCompetitions.stream()
                 .filter(competition -> competition.getStatus() == CompetitionStatus.ATIVA)
                 .toList();
@@ -110,7 +106,6 @@ public class SaleService {
         } else {
             log.info("Venda se qualifica para {} competição(ões) ativa(s)", validCompetitions.size());
 
-            // Calcular score para cada competição ativa
             for (Competition competition : validCompetitions) {
                 try {
                     scoreService.calculateAndSaveScore(savedSale.getId(), competition.getId());

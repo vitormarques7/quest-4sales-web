@@ -40,6 +40,21 @@ public class CompetitionController {
         return ResponseEntity.ok(created);
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<Competition> updateCompetition(
+            @PathVariable UUID id,
+            @Valid @RequestBody Competition competition) {
+        competition.setId(id);
+        Competition updated = competitionService.update(competition);
+        return ResponseEntity.ok(updated);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteCompetition(@PathVariable UUID id) {
+        competitionService.delete(id);
+        return ResponseEntity.noContent().build();
+    }
+
     @PutMapping("/{id}/start")
     public ResponseEntity<Competition> startCompetition(@PathVariable UUID id) {
         competitionService.startCompetition(id);

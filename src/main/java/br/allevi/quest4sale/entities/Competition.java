@@ -50,6 +50,20 @@ public class Competition {
     @Column(nullable = false, length = 20)
     @Builder.Default
     private CompetitionStatus status = CompetitionStatus.PLANEJADA;
+
+    @Column(name = "prize_first", columnDefinition = "TEXT")
+    private String prizeFirst;
+
+    @Column(name = "prize_second", columnDefinition = "TEXT")
+    private String prizeSecond;
+
+    @Column(name = "prize_third", columnDefinition = "TEXT")
+    private String prizeThird;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean active = true;
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;

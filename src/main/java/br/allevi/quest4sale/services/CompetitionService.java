@@ -41,17 +41,16 @@ public class CompetitionService {
 
     @Transactional(readOnly = true)
     public List<Competition> findAll() {
-        return competitionRepository.findAll();
+        return competitionRepository.findByActiveTrue();
     }
 
     @Transactional(readOnly = true)
     public List<Competition> findActive() {
-        return competitionRepository.findByStatus(CompetitionStatus.ATIVA);
+        return competitionRepository.findByActiveTrueAndStatus(CompetitionStatus.ATIVA);
     }
 
     @Transactional
     public Competition create(Competition competition) {
-        // Validações
         validateCompetition(competition);
 
         return competitionRepository.save(competition);
@@ -70,7 +69,13 @@ public class CompetitionService {
 
     @Transactional
     public void delete(UUID id) {
-        competitionRepository.deleteById(id);
+        Competition competition = competitionRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Competition não encontrada com ID: " + id));
+
+        competition.setActive(false);
+        competitionRepository.save(competition);
+
+        log.info("Competição desativada (soft delete): {} (ID: {})", competition.getName(), id);
     }
 
     @Transactional(readOnly = true)
@@ -94,7 +99,6 @@ public class CompetitionService {
 
         log.info("Competição iniciada: {} (ID: {})", competition.getName(), id);
 
-        // Notificar todos os usuários sobre o início da competição
         try {
             notificationService.notifyCompetitionStarted(id);
             log.info("Notificações de início enviadas para competição ID: {}", id);
@@ -115,7 +119,6 @@ public class CompetitionService {
 
         log.info("Competição finalizada: {} (ID: {})", competition.getName(), id);
 
-        // Notificar todos os usuários sobre o fim da competição
         try {
             notificationService.notifyCompetitionFinished(id);
             log.info("Notificações de finalização enviadas para competição ID: {}", id);
