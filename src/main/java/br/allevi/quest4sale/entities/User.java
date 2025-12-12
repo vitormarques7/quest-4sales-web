@@ -32,7 +32,6 @@ public class User {
     private UUID id;
 
     @Column(nullable = false)
-    @NotBlank
     @Size(min = 3, max = 50)
     private String username;
 
@@ -59,6 +58,10 @@ public class User {
 
     @Column(name = "avatar_url")
     private String avatarUrl;
+
+    @Column(name = "active", nullable = false)
+    @Builder.Default
+    private Boolean active = true;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
