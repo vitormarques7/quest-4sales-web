@@ -142,7 +142,6 @@ public class GlobalExceptionHandler {
 
         String message = "Erro de integridade de dados. Verifique se não há violação de constraints.";
 
-        // Tentar fornecer mensagem mais específica
         if (ex.getMessage() != null) {
             if (ex.getMessage().contains("unique constraint") || ex.getMessage().contains("duplicate key")) {
                 message = "Já existe um registro com esses dados.";

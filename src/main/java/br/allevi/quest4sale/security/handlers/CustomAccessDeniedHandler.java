@@ -51,7 +51,6 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
         String path = request.getRequestURI();
         String method = request.getMethod();
 
-        // Mensagens específicas por endpoint
         if (path.startsWith("/api/competitions") && !method.equals("GET")) {
             return "Acesso negado. Apenas usuários com perfil ADMIN podem gerenciar competições.";
         }
@@ -68,7 +67,6 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler {
             return "Acesso negado. Apenas ADMIN, MANAGER e SELLER podem acessar pontuações.";
         }
 
-        // Mensagem genérica
         return "Você não tem permissão para acessar este recurso. Verifique suas credenciais e perfil de acesso.";
     }
 }

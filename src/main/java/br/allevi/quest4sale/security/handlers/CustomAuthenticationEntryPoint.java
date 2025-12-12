@@ -50,28 +50,23 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
     private String buildDetailedMessage(HttpServletRequest request, AuthenticationException exception) {
         String exceptionMessage = exception.getMessage();
 
-        // Token expirado
         if (exceptionMessage != null && exceptionMessage.contains("expired")) {
             return "Sua sessão expirou. Por favor, faça login novamente.";
         }
 
-        // Token inválido
         if (exceptionMessage != null && (exceptionMessage.contains("invalid") || exceptionMessage.contains("malformed"))) {
             return "Token de autenticação inválido. Por favor, faça login novamente.";
         }
 
-        // Token ausente
         String authHeader = request.getHeader("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return "Token de autenticação não fornecido. Inclua o header 'Authorization: Bearer {token}' na requisição.";
         }
 
-        // Credenciais inválidas (login)
         if (request.getRequestURI().contains("/login")) {
             return "Credenciais inválidas. Verifique seu usuário e senha.";
         }
 
-        // Mensagem genérica
         return "Autenticação necessária. Por favor, faça login para acessar este recurso.";
     }
 }
